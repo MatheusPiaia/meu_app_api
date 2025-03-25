@@ -42,9 +42,4 @@ if not database_exists(engine.url):
 if __name__=="__main__":
 # cria as tabelas do banco, caso não existam
     Base.metadata.create_all(engine)
-
-    data_prevista=datetime.now()
-    manutencao=Manutencao(nome_equipamento="M4-9",matricula_tecnico="164401",status="Finalizado",comentario="",previsao_conclusao=data_prevista)
-    session.add(manutencao)
-    session.commit()
     

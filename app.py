@@ -1,5 +1,5 @@
 from flask_openapi3 import OpenAPI, Info, Tag
-from flask import redirect
+from flask import redirect, jsonify, request
 from urllib.parse import unquote
 
 from sqlalchemy.exc import IntegrityError
@@ -240,9 +240,9 @@ def del_tecnico(query:TecnicoBuscaSchema):
         logger.warning(f"Erro ao deletar técnico '{tecnico_matricula}', {error_msg}")
         return {"mesage": error_msg}, 404
 
-@app.get('/manutencoes', tags=[manutencao_tag],
+@app.get('/manutencoes/status', tags=[manutencao_tag],
          responses={"200":ListagemManutencaoSchema, "404":ErrorSchema})
-def get_manutencoes(query: ManutencaoBuscaSchema):
+def get_manutencoes(query: ManutencaoStatusSchema):
     """Faz a busca por todos as Manutencoes cadastrados com o status informado
     
     Retorna uma representação em forma de lista de todas as manutencoes do status
@@ -256,13 +256,126 @@ def get_manutencoes(query: ManutencaoBuscaSchema):
         manutencoes = session.query(Manutencao).filter(Manutencao.status == manutencao_status).all()
 
         if not manutencoes:
-            logger.debug(f"Nenhuma manutenção encontrada com status: {manutencao_status}")
-            return apresenta_manutencoes([]), 200  # Retorna lista vazia no formato esperado
+            #logger.debug(f"Nenhuma manutenção encontrada com status: {manutencao_status}")
+            return {"manutenções":[]}, 200  # Retorna lista vazia no formato esperado
         else:
-            logger.debug(f"Encontradas {len(manutencoes)} manutenções com status: {manutencao_status}")
+            #logger.debug(f"Encontradas {len(manutencoes)} manutenções com status: {manutencao_status}")
             # retorna a representação das manutencoes em lista
-            print(manutencoes)
+            #print(manutencoes)
             return apresenta_manutencoes(manutencoes), 200
     except Exception as e:
         logger.error(f"Erro ao buscar manutenções: {str(e)}")
         return {"error": "Erro interno no servidor", "details": str(e)}, 500
+
+@app.post('/manutencao', tags=[manutencao_tag],
+          responses={"200": ManutencaoViewSchema, "404":ErrorSchema})
+def add_manutencao(form: ManutencaoSchema):
+    """Cadastro de uma nova manutencao à base de dados
+    
+    Retorna uma representação da Manutencao cadastrada"""
+    manutencao = Manutencao(
+        nome_equipamento= form.nome_equipamento,
+        matricula_tecnico= form.matricula_tecnico,
+        status= form.status,
+        tipo_manutencao= form.tipo_manutencao,
+        comentario= form.comentario,
+        previsao_conclusao= form.previsao_conclusao
+    )
+    logger.debug(f"Adicionando manutencao")
+    try:
+        #criando conexão com a base
+        session = Session()
+        #adicionando manutencao
+        session.add(manutencao)
+        #efetivando o cadastro do tecnico a tabela
+        session.commit()
+        logger.debug(f"Adicionada manutencao")
+        return apresenta_manutencao(manutencao)
+    
+    except IntegrityError as e:
+        # como a duplicidade de matricula é a provável razão do IntegrityError
+        error_msg = "Máquina já está em manutenção"
+        logger.warning(f"Erro ao adicionar manutencao da máquina '{manutencao.nome_equipamento}', {error_msg}")
+        return {"mesage": error_msg}, 409
+    
+    except Exception as e:
+        # caso um erro fora do previsto
+        error_msg = "Não foi possível salvar manutencao"
+        logger.warning(f"Erro ao cadastrar manutencao da máquina '{manutencao.nome_equipamento}', {error_msg}")
+        return {"mesage": error_msg}, 400
+    
+@app.route('/manutencao/<int:id>', methods=["PATCH"])
+def patch_manutencao(id: int):
+    """Atualiza parcialmente uma manutenção existente com dados de um formulário.
+
+    Apenas os campos enviados no formulário serão alterados.
+    """
+
+    logger.debug(f"Buscando manutenção com ID {id} para atualização parcial")
+
+    try:
+        session = Session()
+        manutencao = session.query(Manutencao).filter(Manutencao.id == id).first()
+
+        if not manutencao:
+            error_msg = "Manutenção não encontrada"
+            logger.warning(f"Erro ao atualizar manutenção ID {id}: {error_msg}")
+            return {"message": error_msg}, 404
+
+        # Como apenas alguns dados serão enviados não será usado um Schema
+        # e sim os dados do formulário enviado na requisição
+        data = request.form
+
+        # Atualiza apenas os campos informados no form
+        if "nome_equipamento" in data:
+            manutencao.nome_equipamento = data["nome_equipamento"]
+        if "matricula_tecnico" in data:
+            manutencao.matricula_tecnico = data["matricula_tecnico"]
+        if "status" in data:
+            manutencao.status = data["status"]
+        if "tipo_manutencao" in data:
+            manutencao.tipo_manutencao = data["tipo_manutencao"]
+        if "comentario" in data:
+            manutencao.comentario = data["comentario"]
+        if "previsao_conclusao" in data:
+            manutencao.previsao_conclusao = data["previsao_conclusao"]
+
+        session.commit()
+
+        logger.debug(f"Manutenção ID {id} atualizada parcialmente com sucesso")
+        return apresenta_manutencao(manutencao), 200
+
+    except Exception as e:
+        session.rollback()
+        error_msg = f"Erro ao atualizar parcialmente a manutenção: {str(e)}"
+        logger.error(f"Erro inesperado ao atualizar manutenção ID {id}: {error_msg}")
+        return {"message": error_msg}, 500
+
+    finally:
+        session.close()
+
+@app.delete('/manutencao', tags=[manutencao_tag],
+            responses={"200":ManutencaoDelSchema, "404":ErrorSchema})
+def del_manutencao(query:ManutencaoIdSchema):
+    """Deleta o cadastro de uma manutencao a partir do id informado
+    
+    Retorna uma mensagem de confirmação da remoção
+    """
+    id_manutencao = query.id
+    print(id_manutencao)
+    logger.debug(f"Deletando dados sobre o técnico {id_manutencao}")
+    #criando conexão com o banco
+    session=Session()
+    #fazendo a remoção
+    count = session.query(Manutencao).filter(Manutencao.id == id_manutencao).delete()
+    session.commit()
+
+    if count:
+        # retorna a representação da mensagem de confirmação
+        logger.debug(f"Deletado manutenção {id_manutencao}")
+        return {"mesage": "Manutenção removida", "ID": id_manutencao}, 200
+    else:
+        #se o equipamento não foi encontrado
+        error_msg = "Manutenção não encontrada na base"
+        logger.warning(f"Erro ao deletar manutenção '{id_manutencao}', {error_msg}")
+        return {"mesage": error_msg}, 404

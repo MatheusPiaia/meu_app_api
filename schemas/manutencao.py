@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 from model.manutencao import Manutencao
@@ -7,6 +7,7 @@ class ManutencaoSchema(BaseModel):
     """Define como uma manutencao em equipamento ao ser cadastrada
         deve ser representada
     """
+    model_config = ConfigDict(coerce_numbers_to_str=True)
     nome_equipamento: str
     matricula_tecnico: str
     status: str
@@ -20,6 +21,12 @@ class ManutencaoBuscaSchema(BaseModel):
     """
     nome_equipamento: Optional[str] = None
     status: Optional[str]= None
+
+class ManutencaoIdSchema(BaseModel):
+    '''Define como deve ser a estrutura de visualização feita separando
+        cada status
+    '''
+    id: int
 
 class ManutencaoStatusSchema(BaseModel):
     '''Define como deve ser a estrutura de visualização feita separando

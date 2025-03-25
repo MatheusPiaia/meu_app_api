@@ -19,7 +19,7 @@ class Manutencao(Base):
     equipamentos = relationship("Equipamento", back_populates="manutencao")
     tecnicos = relationship("Tecnico", back_populates="manutencao")
 
-    def __init__(self, nome_equipamento:str, matricula_tecnico:str, status:str,tipo_manutencao:str, comentario:str, previsao_conclusao:datetime):
+    def __init__(self, nome_equipamento:str, matricula_tecnico:str, status:str, tipo_manutencao:str, comentario:str, previsao_conclusao:datetime):
 
         self.nome_equipamento = nome_equipamento
         self.matricula_tecnico = matricula_tecnico
