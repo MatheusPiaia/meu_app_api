@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from model.manutencao import Manutencao
 
@@ -18,9 +18,15 @@ class ManutencaoBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será
         feita com base no nome e status do equipamento.
     """
-    nome_equipamento: str
-    status: str
+    nome_equipamento: Optional[str] = None
+    status: Optional[str]= None
 
+class ManutencaoStatusSchema(BaseModel):
+    '''Define como deve ser a estrutura de visualização feita separando
+        cada status
+    '''
+    status: str
+    
 class ListagemManutencaoSchema(BaseModel):
     """ Define como a lista de equipamentos em manutencao deverá será retornada.
     """

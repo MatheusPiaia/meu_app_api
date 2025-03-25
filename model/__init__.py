@@ -4,11 +4,13 @@ from sqlalchemy import create_engine, CheckConstraint, event, DateTime
 import os
 from datetime import datetime
 
+
 # importando os elementos definidos no modelo
 from model.base import Base
 from model.equipamento import Equipamento
 from model.manutencao import Manutencao
 from model.tecnico import Tecnico
+
 
 db_path = "database/"
 # Verifica se o diretorio não existe

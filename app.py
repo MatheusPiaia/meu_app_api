@@ -19,6 +19,7 @@ equipamento_tag = Tag(name="Equipamento", description="Adição, visualização 
 tecnico_tag = Tag(name="Tecnico", description="Adição, visualização e remoção de técnicos a base")
 manutencao_tag = Tag(name="Manutencao", desccription="Adição, visualização e remoção de equipamentos em manutencao a base")
 
+
 @app.get('/', tags=[home_tag])
 def home():
     """Redireciona para /openapi, tela que permite a escolha do estilo de documentação.
@@ -220,44 +221,48 @@ def del_tecnico(query:TecnicoBuscaSchema):
     
     Retorna uma mensagem de confirmação da remoção
     """
-    tecnico_nome = unquote(unquote(query.nome))
-    print(tecnico_nome)
-    logger.debug(f"Deletando dados sobre o técnico {tecnico_nome}")
+    tecnico_matricula = unquote(unquote(query.matricula))
+    print(tecnico_matricula)
+    logger.debug(f"Deletando dados sobre o técnico {tecnico_matricula}")
     #criando conexão com o banco
     session=Session()
     #fazendo a remoção
-    count = session.query(Tecnico).filter(Tecnico.nome == tecnico_nome).delete()
+    count = session.query(Tecnico).filter(Tecnico.matricula == tecnico_matricula).delete()
     session.commit()
 
     if count:
         # retorna a representação da mensagem de confirmação
-        logger.debug(f"Deletado técnico {tecnico_nome}")
-        return {"mesage": "Técnico removido", "nome": tecnico_nome}, 200
+        logger.debug(f"Deletado técnico {tecnico_matricula}")
+        return {"mesage": "Técnico removido", "nome": tecnico_matricula}, 200
     else:
         #se o equipamento não foi encontrado
         error_msg = "Técnico não encontrado na base"
-        logger.warning(f"Erro ao deletar técnico '{tecnico_nome}', {error_msg}")
+        logger.warning(f"Erro ao deletar técnico '{tecnico_matricula}', {error_msg}")
         return {"mesage": error_msg}, 404
 
-@app.get('/manutencoes/status/<status>', tags=[manutencao_tag],
-         responses={"200":ManutencaoViewSchema, "404":ErrorSchema})
-def get_manutencoes(status:str):
+@app.get('/manutencoes', tags=[manutencao_tag],
+         responses={"200":ListagemManutencaoSchema, "404":ErrorSchema})
+def get_manutencoes(query: ManutencaoBuscaSchema):
     """Faz a busca por todos as Manutencoes cadastrados com o status informado
     
     Retorna uma representação em forma de lista de todas as manutencoes do status
     buscado cadastradas"""
+    manutencao_status = unquote(unquote(query.status))
+    try:
+        logger.debug(f"Buscando manutenções com status: {manutencao_status}")
+        # criando conexão com a base
+        session = Session()
+        # fazendo a busca
+        manutencoes = session.query(Manutencao).filter(Manutencao.status == manutencao_status).all()
 
-    logger.debug(f"Coletando manutencoes no banco")
-    # criando conexão com a base
-    session = Session()
-    # fazendo a busca
-    manutencoes = session.query(Manutencao).filter(Manutencao.status == status).all()
-
-    if not manutencoes:
-        # se não há tecnicos cadastrados
-        return {"manutencoes":[]}, 200
-    else:
-        logger.debug(f"{len(manutencoes)} serviços encontrados")
-        # retorna a representação de tecnico
-        print(manutencoes)
-        return apresenta_manutencoes(manutencoes), 200
+        if not manutencoes:
+            logger.debug(f"Nenhuma manutenção encontrada com status: {manutencao_status}")
+            return apresenta_manutencoes([]), 200  # Retorna lista vazia no formato esperado
+        else:
+            logger.debug(f"Encontradas {len(manutencoes)} manutenções com status: {manutencao_status}")
+            # retorna a representação das manutencoes em lista
+            print(manutencoes)
+            return apresenta_manutencoes(manutencoes), 200
+    except Exception as e:
+        logger.error(f"Erro ao buscar manutenções: {str(e)}")
+        return {"error": "Erro interno no servidor", "details": str(e)}, 500

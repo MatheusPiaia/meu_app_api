@@ -1,12 +1,12 @@
-from pydantic import BaseModel
-from typing import List
+from pydantic import BaseModel, ConfigDict
+from typing import List, Optional
 from model.tecnico import Tecnico
-
 
 class TecnicoSchema(BaseModel):
     """Define como um novo tecnico ao ser cadastrado
         deve ser representado
     """
+    model_config = ConfigDict(coerce_numbers_to_str=True)
     nome: str
     matricula: str
     turno: str
@@ -15,8 +15,9 @@ class TecnicoBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será
         feita com base no nome e matricula do tecnico.
     """
-    nome: str
-    matricula: str
+    model_config = ConfigDict(coerce_numbers_to_str=True)
+    nome: Optional[str] = None
+    matricula: Optional[str] = None
 
 class ListagemTecnicoSchema(BaseModel):
     """ Define como a lista de tecnicos cadastrados deverá será retornada.

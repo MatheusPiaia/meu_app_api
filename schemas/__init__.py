@@ -5,5 +5,5 @@ from schemas.tecnico import TecnicoSchema, TecnicoDelSchema, TecnicoBuscaSchema,
                             ListagemTecnicoSchema, apresenta_tecnicos, apresenta_tecnico
 from schemas.manutencao import ManutencaoSchema, ManutencaoBuscaSchema, ListagemManutencaoSchema, \
                                 ManutencaoDelSchema, ManutencaoViewSchema, \
-                                apresenta_manutencoes, apresenta_manutencao
+                                ManutencaoStatusSchema, apresenta_manutencoes, apresenta_manutencao
 from schemas.error import ErrorSchema
