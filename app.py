@@ -1,5 +1,5 @@
 from flask_openapi3 import OpenAPI, Info, Tag
-from flask import redirect, jsonify, request
+from flask import redirect, jsonify, request, render_template
 from urllib.parse import unquote
 
 from sqlalchemy.exc import IntegrityError
@@ -217,7 +217,7 @@ def get_tecnico(query: TecnicoBuscaSchema):
 @app.delete('/tecnico', tags=[tecnico_tag],
             responses={"200":TecnicoDelSchema, "404":ErrorSchema})
 def del_tecnico(query:TecnicoBuscaSchema):
-    """Deleta o cadastro de um técnico a partir do nome informado
+    """Deleta o cadastro de um técnico a partir da matrícula informada
     
     Retorna uma mensagem de confirmação da remoção
     """
@@ -254,6 +254,31 @@ def get_manutencoes(query: ManutencaoStatusSchema):
         session = Session()
         # fazendo a busca
         manutencoes = session.query(Manutencao).filter(Manutencao.status == manutencao_status).all()
+
+        if not manutencoes:
+            #logger.debug(f"Nenhuma manutenção encontrada com status: {manutencao_status}")
+            return {"manutenções":[]}, 200  # Retorna lista vazia no formato esperado
+        else:
+            #logger.debug(f"Encontradas {len(manutencoes)} manutenções com status: {manutencao_status}")
+            # retorna a representação das manutencoes em lista
+            #print(manutencoes)
+            return apresenta_manutencoes(manutencoes), 200
+    except Exception as e:
+        logger.error(f"Erro ao buscar manutenções: {str(e)}")
+        return {"error": "Erro interno no servidor", "details": str(e)}, 500
+    
+@app.get('/manutencoes', tags=[manutencao_tag],
+         responses={"200":ListagemManutencaoSchema, "404":ErrorSchema})
+def get_manutencoes_all():
+    """Faz a busca por todos as Manutencoes cadastradas
+    
+    Retorna uma representação em forma de lista de todas as manutencoes cadastradas"""
+    try:
+        logger.debug(f"Buscando manutenções")
+        # criando conexão com a base
+        session = Session()
+        # fazendo a busca
+        manutencoes = session.query(Manutencao).all()
 
         if not manutencoes:
             #logger.debug(f"Nenhuma manutenção encontrada com status: {manutencao_status}")
@@ -379,3 +404,11 @@ def del_manutencao(query:ManutencaoIdSchema):
         error_msg = "Manutenção não encontrada na base"
         logger.warning(f"Erro ao deletar manutenção '{id_manutencao}', {error_msg}")
         return {"mesage": error_msg}, 404
+
+
+@app.route("/")
+def index():
+    session = Session()
+    manutencoes = session.query(Manutencao).join(Equipamento).all()  # Busca os dados do banco
+    print(manutencoes)
+    return render_template("index.html", manutencoes=manutencoes)  # Envia para o HTML    

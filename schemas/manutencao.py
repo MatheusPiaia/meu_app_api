@@ -8,6 +8,7 @@ class ManutencaoSchema(BaseModel):
         deve ser representada
     """
     model_config = ConfigDict(coerce_numbers_to_str=True)
+    id: int
     nome_equipamento: str
     matricula_tecnico: str
     status: str
@@ -46,6 +47,7 @@ def apresenta_manutencoes(manutencoes: List[Manutencao]):
     result = []
     for manutencao in manutencoes:
         result.append({
+            "id":manutencao.id,
             "nome_equipamento": manutencao.nome_equipamento,
             "matricula_tecnico": manutencao.matricula_tecnico,
             "status": manutencao.status,
