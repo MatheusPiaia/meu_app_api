@@ -8,7 +8,7 @@ class ManutencaoSchema(BaseModel):
         deve ser representada
     """
     model_config = ConfigDict(coerce_numbers_to_str=True)
-    id: int
+    #id: int
     nome_equipamento: str
     matricula_tecnico: str
     status: str
@@ -45,7 +45,8 @@ def apresenta_manutencoes(manutencoes: List[Manutencao]):
         ManutencaoSchema.
     """
     result = []
-    for manutencao in manutencoes:
+    for manutencao in manutencoes:        
+        formatted_date = manutencao.previsao_conclusao.strftime("%d/%m/%Y %H:%M")
         result.append({
             "id":manutencao.id,
             "nome_equipamento": manutencao.nome_equipamento,
@@ -53,9 +54,9 @@ def apresenta_manutencoes(manutencoes: List[Manutencao]):
             "status": manutencao.status,
             "tipo_manutencao":manutencao.tipo_manutencao,
             "comentario":manutencao.comentario,
-            "previsao_conclusao":manutencao.previsao_conclusao                        
+            "previsao_conclusao":formatted_date                        
         })
-    return {"equipamentos": result}
+    return {"manutencoes": result}
 
 class ManutencaoViewSchema(BaseModel):
     """Define como uma manutencao em equipamento será retornada

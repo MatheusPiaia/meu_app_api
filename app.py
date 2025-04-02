@@ -405,10 +405,3 @@ def del_manutencao(query:ManutencaoIdSchema):
         logger.warning(f"Erro ao deletar manutenção '{id_manutencao}', {error_msg}")
         return {"mesage": error_msg}, 404
 
-
-@app.route("/")
-def index():
-    session = Session()
-    manutencoes = session.query(Manutencao).join(Equipamento).all()  # Busca os dados do banco
-    print(manutencoes)
-    return render_template("index.html", manutencoes=manutencoes)  # Envia para o HTML    
