@@ -27,6 +27,8 @@ Abra o http://localhost:5000/#/ no navegador para verificar o status da API em e
 Aplicação desenvolvida como MVP para a Sprint: Desenvolvimento Full Stack Básico no curso de Engenharia de Software.
 Esta aplicação tem o objetivo de criar um ambiente visual para facilitar a comunicação entre os fornecedores (manutenção) e os clientes (produção), fornecendo informações de quais equipamentos estão "Em manutenção", na "Fila para Manutenção", "Aguardando peças" para ser possível executar o reparo e "Finalizado".
 
+Fornecendo também informações como comentário (qual manutenção será realizada no equipamento e/ou qual item falta para finalizar manutenção) e uma previsão de conclusão do serviço.
+
 
 # Funcionalidades
 - [x] Cadastro de Equipamentos
