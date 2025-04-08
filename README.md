@@ -46,6 +46,7 @@ Abaixo segue todas as rotas da API
 
 <a href="https://github.com/MatheusPiaia">
  <img style="border-radius: 50%;" src="https://avatars.githubusercontent.com/u/185968337?s=400&u=b4f54f3c5ea4b83b959d508547adf7077fd2caf8&v=4" width="100px;" alt=""/>
- <br />
+ <br/>
  <sub><b>Matheus Piaia</b></sub></a> <a href="https://github.com/MatheusPiaia" title="GitHub">🚀</a>
- [![Linkedin Badge](https://img.shields.io/badge/-Matheus-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/matheus-piaia-231647144)](https://www.linkedin.com/in/matheus-piaia-231647144) 
+ <img src="https://img.shields.io/badge/-Matheus-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/matheus-piaia-231647144">
+ [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com)
