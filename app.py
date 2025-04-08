@@ -9,7 +9,7 @@ from logger import logger
 from schemas import *
 from flask_cors import CORS
 
-info = Info(title="Minha API", version="1.0.0")
+info = Info(title="Sistema de Gerenciamento Manutenção Empilhadeiras", version="1.0.0")
 app = OpenAPI(__name__, info=info)
 CORS(app)
 
@@ -259,7 +259,7 @@ def get_manutencoes(query: ManutencaoStatusSchema):
         logger.error(f"Erro ao buscar manutenções: {str(e)}")
         return {"error": "Erro interno no servidor", "details": str(e)}, 500
 
-    
+
 @app.get('/manutencoes', tags=[manutencao_tag],
          responses={"200":ListagemManutencaoSchema, "404":ErrorSchema})
 def get_manutencoes_all():
