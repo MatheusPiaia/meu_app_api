@@ -87,3 +87,6 @@ def apresenta_manutencao(manutencao: Manutencao):
         "comentario":manutencao.comentario,
         "previsao_conclusao":manutencao.previsao_conclusao
     }
+
+class ManutencaoPath(BaseModel):
+    id: int    

@@ -26,6 +26,7 @@ def home():
     """
     return redirect('/openapi')
 
+
 @app.post('/equipamento', tags=[equipamento_tag],
           responses={"200":EquipamentoSchema, "409": ErrorSchema, "400": ErrorSchema})
 def add_equipamento(form: EquipamentoSchema):
@@ -60,6 +61,7 @@ def add_equipamento(form: EquipamentoSchema):
         logger.warning(f"Erro ao cadastrar novo equipamento '{equipamento.nome}', {error_msg}")
         return {"mesage": error_msg}, 400
 
+
 @app.get('/equipamentos', tags=[equipamento_tag],
          responses={"200":ListagemEquipamentoSchema})
 def get_equipamentos():
@@ -82,30 +84,7 @@ def get_equipamentos():
         # retorna a representação de equipamento
         print(equipamentos)
         return apresenta_equipamentos(equipamentos), 200
-    
-@app.get('/equipamento', tags=[equipamento_tag],
-         responses={"200":EquipamentoViewSchema, "404":ErrorSchema})
-def get_equipamento(query: EquipamentoBuscaSchema):
-    """Faz a busca por um equipamento a partir do nome do equipamento
-    
-    Retorna uma representação do equipamento
-    """
-    equipamento_nome = query.nome
-    logger.debug(f"Coletando dados sobre o equipamento #{equipamento_nome}")
-    #criando conexão com a base
-    session = Session()
-    #fazendo a busca
-    equipamento = session.query(Equipamento).filter(Equipamento.nome == equipamento_nome).first()
 
-    if not equipamento:
-        #se o equipamento não foi encontrado
-        error_msg = "Equipamento não encontrado na base"
-        logger.warning(f"Erro ao buscar o equipamento '{equipamento_nome}', {error_msg}")
-        return {"mesage": error_msg}, 404
-    else:
-        logger.debug(f"Equipamento encontrado: '{equipamento_nome}'")
-        #retorna a representação de equipamento
-        return apresenta_equipamento(equipamento), 200
 
 @app.delete('/equipamento', tags=[equipamento_tag],
             responses={"200":EquipamentoDelSchema, "404":ErrorSchema})
@@ -114,25 +93,42 @@ def del_equipamento(query:EquipamentoBuscaSchema):
     
     Retorna uma mensagem de confirmação da remoção
     """
-    equipamento_nome = unquote(unquote(query.nome))
-    print(equipamento_nome)
+    equipamento_nome = unquote(unquote(query.nome))    
     logger.debug(f"Deletando dados sobre o equipamento {equipamento_nome}")
     #criando conexão com o banco
     session=Session()
-    #fazendo a remoção
-    count = session.query(Equipamento).filter(Equipamento.nome == equipamento_nome).delete()
-    session.commit()
-
-    if count:
-        # retorna a representação da mensagem de confirmação
-        logger.debug(f"Deletado equipamento {equipamento_nome}")
-        return {"mesage": "Equipamento removido", "nome": equipamento_nome}, 200
-    else:
-        #se o equipamento não foi encontrado
-        error_msg = "Equipamento não encontrado na base"
-        logger.warning(f"Erro ao deletar equipamento '{equipamento_nome}', {error_msg}")
-        return {"mesage": error_msg}, 404
     
+    try:
+        # Verifica se existe manutenção associada
+        manutencao = session.query(Manutencao).filter(Manutencao.nome_equipamento == equipamento_nome).first()
+        if manutencao:
+            error_msg = "Não foi possível deletar o equipamento, pois há manutenção vinculada."
+            logger.warning(f"Erro ao deletar equipamento '{equipamento_nome}': {error_msg}")
+            return {"mesage": error_msg}, 400
+
+        # Se não há manutenção, tenta deletar
+        count = session.query(Equipamento).filter(Equipamento.nome == equipamento_nome).delete()
+        session.commit()
+
+        if count:
+            logger.debug(f"Deletado equipamento {equipamento_nome}")
+            return {"mesage": "Equipamento removido", "nome": equipamento_nome}, 200
+        else:
+            error_msg = "Equipamento não encontrado na base"
+            logger.warning(f"Erro ao deletar equipamento '{equipamento_nome}': {error_msg}")
+            return {"mesage": error_msg}, 404
+
+    except IntegrityError as e:
+        session.rollback()
+        logger.error(f"Erro de integridade ao deletar '{equipamento_nome}': {str(e)}")
+        return {"mesage": "Erro de integridade. Possível vínculo com outros registros."}, 400
+
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Erro inesperado ao deletar '{equipamento_nome}': {str(e)}")
+        return {"mesage": "Erro interno do servidor."}, 500
+
+
 @app.post('/tecnico', tags=[tecnico_tag],
           responses={"200":TecnicoViewSchema, "409": ErrorSchema, "400": ErrorSchema})
 def add_tecnico(form: TecnicoSchema):
@@ -166,6 +162,7 @@ def add_tecnico(form: TecnicoSchema):
         logger.warning(f"Erro ao cadastrar novo técnico de matricula '{tecnico.matricula}', {error_msg}")
         return {"mesage": error_msg}, 400
 
+
 @app.get('/tecnicos', tags=[tecnico_tag],
          responses={"200":ListagemTecnicoSchema})
 def get_tecnicos():
@@ -188,31 +185,7 @@ def get_tecnicos():
         # retorna a representação de tecnico
         print(tecnicos)
         return apresenta_tecnicos(tecnicos), 200
-    
-@app.get('/tecnico', tags=[tecnico_tag],
-            responses={"200":TecnicoViewSchema, "404":ErrorSchema})
-def get_tecnico(query: TecnicoBuscaSchema):
-    """Faz a busca por um tecnico a partir do nome e matricula
-        
-    Retorna uma representação do dados do tecnico
-    """       
-    tecnico_nome = query.nome
-    tecnico_matricula = query.matricula
-    logger.debug(f"Coletando dados sobre o tecnico #{tecnico_nome}")
-    #criando conexão com a base
-    session = Session()
-    #fazendo a busca
-    tecnico = session.query(Tecnico).filter((Tecnico.nome == tecnico_nome)|(Tecnico.matricula == tecnico_matricula)).first()
 
-    if not tecnico:
-        #se o equipamento não foi encontrado
-        error_msg = "Técnico não encontrado na base"
-        logger.warning(f"Erro ao buscar o técnico '{tecnico_nome}', {error_msg}")
-        return {"mesage": error_msg}, 404
-    else:
-        logger.debug(f"Técnico encontrado: '{tecnico_nome}'")
-        #retorna a representação de equipamento
-        return apresenta_tecnico(tecnico), 200
 
 @app.delete('/tecnico', tags=[tecnico_tag],
             responses={"200":TecnicoDelSchema, "404":ErrorSchema})
@@ -221,24 +194,43 @@ def del_tecnico(query:TecnicoBuscaSchema):
     
     Retorna uma mensagem de confirmação da remoção
     """
-    tecnico_matricula = unquote(unquote(query.matricula))
-    print(tecnico_matricula)
+    tecnico_matricula = unquote(unquote(query.matricula))    
     logger.debug(f"Deletando dados sobre o técnico {tecnico_matricula}")
     #criando conexão com o banco
     session=Session()
-    #fazendo a remoção
-    count = session.query(Tecnico).filter(Tecnico.matricula == tecnico_matricula).delete()
-    session.commit()
 
-    if count:
+    try:
+        # Verifica se existe manutenção associada
+        manutencao = session.query(Manutencao).filter(Manutencao.matricula_tecnico == tecnico_matricula).first()
+        if manutencao:
+            error_msg = "Não foi possível deletar o técnico, pois há manutenção vinculada."
+            logger.warning(f"Erro ao deletar técnico '{tecnico_matricula}': {error_msg}")
+            return {"mesage": error_msg}, 400
+
+        # Se não há manutenção, tenta deletar
+        count = session.query(Tecnico).filter(Tecnico.matricula == tecnico_matricula).delete()
+        session.commit()
+
+        if count:
         # retorna a representação da mensagem de confirmação
-        logger.debug(f"Deletado técnico {tecnico_matricula}")
-        return {"mesage": "Técnico removido", "nome": tecnico_matricula}, 200
-    else:
-        #se o equipamento não foi encontrado
-        error_msg = "Técnico não encontrado na base"
-        logger.warning(f"Erro ao deletar técnico '{tecnico_matricula}', {error_msg}")
-        return {"mesage": error_msg}, 404
+            logger.debug(f"Deletado técnico {tecnico_matricula}")
+            return {"mesage": "Técnico removido", "nome": tecnico_matricula}, 200
+        else:
+        #se o técnico não foi encontrado
+            error_msg = "Técnico não encontrado na base"
+            logger.warning(f"Erro ao deletar técnico '{tecnico_matricula}', {error_msg}")
+            return {"mesage": error_msg}, 404
+
+    except IntegrityError as e:
+        session.rollback()
+        logger.error(f"Erro de integridade ao deletar '{tecnico_matricula}': {str(e)}")
+        return {"mesage": "Erro de integridade. Possível vínculo com outros registros."}, 400
+
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Erro inesperado ao deletar '{tecnico_matricula}': {str(e)}")
+        return {"mesage": "Erro interno do servidor."}, 500
+   
 
 @app.get('/manutencoes/status', tags=[manutencao_tag],
          responses={"200":ListagemManutencaoSchema, "404":ErrorSchema})
@@ -266,6 +258,7 @@ def get_manutencoes(query: ManutencaoStatusSchema):
     except Exception as e:
         logger.error(f"Erro ao buscar manutenções: {str(e)}")
         return {"error": "Erro interno no servidor", "details": str(e)}, 500
+
     
 @app.get('/manutencoes', tags=[manutencao_tag],
          responses={"200":ListagemManutencaoSchema, "404":ErrorSchema})
@@ -291,6 +284,7 @@ def get_manutencoes_all():
     except Exception as e:
         logger.error(f"Erro ao buscar manutenções: {str(e)}")
         return {"error": "Erro interno no servidor", "details": str(e)}, 500
+
 
 @app.post('/manutencao', tags=[manutencao_tag],
           responses={"200": ManutencaoViewSchema, "404":ErrorSchema})
@@ -329,13 +323,14 @@ def add_manutencao(form: ManutencaoSchema):
         logger.warning(f"Erro ao cadastrar manutencao da máquina '{manutencao.nome_equipamento}', {error_msg}")
         return {"mesage": error_msg}, 400
     
-@app.route('/manutencao/<int:id>', methods=["PATCH"])
-def patch_manutencao(id: int):
+@app.patch('/manutencao/<int:id>', tags=[manutencao_tag],
+          responses={"200": ManutencaoViewSchema, "404":ErrorSchema} )
+def patch_manutencao(path: ManutencaoPath, form:ManutencaoStatusSchema):
     """Atualiza parcialmente uma manutenção existente com dados de um formulário.
 
     Apenas os campos enviados no formulário serão alterados.
     """
-
+    id = path.id
     logger.debug(f"Buscando manutenção com ID {id} para atualização parcial")
 
     try:
@@ -349,6 +344,7 @@ def patch_manutencao(id: int):
 
         # Como apenas alguns dados serão enviados não será usado um Schema
         # e sim os dados do formulário enviado na requisição
+        
         data = request.form
 
         # Atualiza apenas os campos informados no form
@@ -364,7 +360,7 @@ def patch_manutencao(id: int):
             manutencao.comentario = data["comentario"]
         if "previsao_conclusao" in data:
             manutencao.previsao_conclusao = data["previsao_conclusao"]
-
+                    
         session.commit()
 
         logger.debug(f"Manutenção ID {id} atualizada parcialmente com sucesso")
@@ -378,6 +374,7 @@ def patch_manutencao(id: int):
 
     finally:
         session.close()
+
 
 @app.delete('/manutencao', tags=[manutencao_tag],
             responses={"200":ManutencaoDelSchema, "404":ErrorSchema})

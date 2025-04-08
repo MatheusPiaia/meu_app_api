@@ -13,10 +13,9 @@ class TecnicoSchema(BaseModel):
 
 class TecnicoBuscaSchema(BaseModel):
     """ Define como deve ser a estrutura que representa a busca. Que será
-        feita com base no nome e matricula do tecnico.
+        feita com base na matricula do tecnico.
     """
-    model_config = ConfigDict(coerce_numbers_to_str=True)
-    nome: Optional[str] = None
+    model_config = ConfigDict(coerce_numbers_to_str=True)    
     matricula: Optional[str] = None
 
 class ListagemTecnicoSchema(BaseModel):
