@@ -1,8 +1,12 @@
-# API APlicação gerenciamento manutenção empilhadeiras
+# API Aplicação Gerenciamento Manutenção Empilhadeiras
 
 # Índice
 
 * [Instalação](#-instalação)
+* [Descrição](#descrição)
+* [Funcionalidades](#funcionalidades)
+* [Tecnologias Utilizadas](#-tecnologias-utilizadas)
+* [Autor](#autor)
 
 # 🎲 Instalação
 Após clonar o repositório, é necessário ir ao diretório raiz, pelo terminal e executar:
@@ -32,6 +36,10 @@ Esta aplicação tem o objetivo de criar um ambiente visual para facilitar a com
 Após a Execução da API é possível acessar a documentação via Swagger e verificar/testar todas as funcionalidades da aplicação.
 Abaixo segue todas as rotas da API
 
+![rotas api](https://github.com/user-attachments/assets/ab01f1cd-0346-4429-8ba2-14c2efedbbeb)
+
+E um exemplo de respostas possíveis
+![respostas](https://github.com/user-attachments/assets/e5da57c9-f660-4de0-875f-b76c378d7628)
 
 
 
@@ -46,7 +54,10 @@ Abaixo segue todas as rotas da API
 
 <a href="https://github.com/MatheusPiaia">
  <img style="border-radius: 50%;" src="https://avatars.githubusercontent.com/u/185968337?s=400&u=b4f54f3c5ea4b83b959d508547adf7077fd2caf8&v=4" width="100px;" alt=""/>
- <br/>
- <sub><b>Matheus Piaia</b></sub></a> <a href="https://github.com/MatheusPiaia" title="GitHub">🚀</a>
- <img src="https://img.shields.io/badge/-Matheus-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/matheus-piaia-231647144">
- [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com)
+ <br/></a> 
+
+ [![GitHub](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/MatheusPiaia)
+ [![LinkedIn](https://img.shields.io/badge/LinkedIn-Matheus-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/matheus-piaia-231647144)
+ 
+
+ 
