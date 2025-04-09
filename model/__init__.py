@@ -39,7 +39,6 @@ session = Session()
 if not database_exists(engine.url):
     create_database(engine.url) 
 
-if __name__=="__main__":
 # cria as tabelas do banco, caso não existam
     Base.metadata.create_all(engine)
     
