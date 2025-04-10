@@ -9,7 +9,16 @@
 * [Autor](#autor)
 
 # 🎲 Instalação
+Recomendado iniciar ambiente virtual antes da instalação das dependência/bibliotecas.
+
+Para iniciar ambiente virtual no padrão do python utilizar:
+
+python -m venv env (cria o ambiente virtual)
+
+.\env\Scripts\activate (inicia o ambiente virtual)
+
 Após clonar o repositório, é necessário ir ao diretório raiz, pelo terminal e executar:
+
 pip install -r requirements.txt
 
 Este comando instala as dependências/bibliotecas, descritas no arquivo requirements.txt.
